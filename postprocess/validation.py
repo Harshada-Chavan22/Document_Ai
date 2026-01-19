@@ -1,5 +1,4 @@
 # postprocess/validation.py
-
 def validate_fields(dealer, model, hp, cost, vision):
     return {
         "dealer_name": dealer,
