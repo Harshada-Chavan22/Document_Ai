@@ -8,7 +8,7 @@ def pdf_to_images(pdf_path):
 
     images = convert_from_path(
         pdf_path,
-        dpi=200,
+        dpi=150,
         poppler_path=POPPLER_PATH
     )
 
