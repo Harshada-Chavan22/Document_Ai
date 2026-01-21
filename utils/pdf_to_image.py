@@ -1,4 +1,3 @@
-# utils/pdf_to_image.py
 from pdf2image import convert_from_path
 import os
 
@@ -9,7 +8,7 @@ def pdf_to_images(pdf_path):
 
     images = convert_from_path(
         pdf_path,
-        dpi=300,
+        dpi=200,
         poppler_path=POPPLER_PATH
     )
 
@@ -21,4 +20,5 @@ def pdf_to_images(pdf_path):
         img.save(path, "JPEG")
         image_paths.append(path)
 
+    print(f"[DEBUG] Total images created: {len(image_paths)}")
     return image_paths

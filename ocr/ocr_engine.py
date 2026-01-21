@@ -1,40 +1,29 @@
-# ocr/ocr_engine.py
 from paddleocr import PaddleOCR
 import cv2
 
 ocr = PaddleOCR(
     use_angle_cls=True,
     lang="en",
-    det=True,
-    rec=True,
-    cls=True,
-    enable_mkldnn=False   # 🔴 critical
+    enable_mkldnn=False
 )
 
 def run_ocr(image_paths):
     print("[INFO] Running OCR")
-    ocr_data = []
 
     for img_path in image_paths:
+        print("[DEBUG] Reading image:", img_path)
         img = cv2.imread(img_path)
+
         if img is None:
+            print("[ERROR] Image could not be read")
             continue
 
         result = ocr.ocr(img)
 
-        if not result:
-            continue
+        print("\n========== RAW OCR OUTPUT ==========")
+        print(result)
+        print("===================================")
 
-        for line in result:
-            for word in line:
-                bbox = word[0]
-                text = word[1][0]
-                conf = float(word[1][1])
+        break  # only first image for debug
 
-                ocr_data.append({
-                    "text": text,
-                    "bbox": bbox,
-                    "confidence": conf
-                })
-
-    return ocr_data
+    return []
