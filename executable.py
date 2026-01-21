@@ -1,3 +1,10 @@
+import os
+
+# 🔴 MUST be set before Paddle is imported
+os.environ["FLAGS_use_onednn"] = "False"
+os.environ["FLAGS_enable_pir_api"] = "0"
+os.environ["FLAGS_use_new_executor"] = "0"
+
 import sys
 
 from utils.pdf_to_image import pdf_to_images
