@@ -1,0 +1,19 @@
+# Core
+numpy
+opencv-python
+pillow
+python-Levenshtein
+
+# PDF handling
+pdf2image
+
+# OCR (CPU)
+paddlepaddle==2.6.1
+paddleocr==2.7.3
+paddlex==2.1.0
+
+# Optional (future vision model)
+ultralytics
+
+# Utilities
+tqdm

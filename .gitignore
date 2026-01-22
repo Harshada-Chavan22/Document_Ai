@@ -1,5 +1,37 @@
+# Python
 __pycache__/
 *.pyc
-.env
-output/result.json
+*.pyo
+*.pyd
+
+# Conda / virtual env
+.env/
+.venv/
+conda-env/
+miniconda3/
+anaconda3/
+
+# Paddle / OCR downloaded models
+.paddlex/
+.paddle/
+.paddleocr/
+.paddlehub/
+
+# Ultralytics
+runs/
+ultralytics_settings.yaml
+
+# Large model files
+models/*.pt
+models/*.onnx
+
+# Output files
+output/
 data/images/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
