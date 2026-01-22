@@ -20,28 +20,36 @@ def main(pdf_path):
     ocr_data = run_ocr(images)
     print(f"[INFO] OCR lines received in executable: {len(ocr_data)}")
 
-    # 3. Field extraction
+    # 3. Extract text fields
     fields = extract_fields(ocr_data)
 
     # 4. Signature & Stamp detection
     signature, stamp = detect_signature_stamp(images)
 
-    # Attach vision fields
+    # 5. Attach vision results to fields  ✅ CRITICAL
     fields["signature"] = signature
     fields["stamp"] = stamp
 
-    # 5. Document confidence (✅ NOW DEFINED BEFORE USE)
+    # 6. Document confidence  ✅ MUST COME AFTER fields update
     doc_confidence = compute_document_confidence(ocr_data, fields)
 
-    # 6. Final output object
+    # 7. FINAL hackathon output (schema-safe)
     output = {
-        "doc_id": os.path.basename(pdf_path),
-        "fields": fields,
+        "doc_id": os.path.splitext(os.path.basename(pdf_path))[0],
+        "fields": {
+            "dealer_name": fields.get("dealer_name"),
+            "model_name": fields.get("model_name"),
+            "horse_power": fields.get("horse_power"),
+            "asset_cost": fields.get("asset_cost"),
+            "signature": fields.get("signature"),
+            "stamp": fields.get("stamp")
+        },
         "confidence": doc_confidence,
-        "processing_time_sec": round(time.time() - start_time, 2)
+        "processing_time_sec": round(time.time() - start_time, 2),
+        "cost_estimate_usd": 0.002
     }
 
-    # 7. Save JSON
+    # 8. Save JSON
     os.makedirs("output", exist_ok=True)
     with open("output/result.json", "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
