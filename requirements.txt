@@ -17,3 +17,4 @@ ultralytics
 
 # Utilities
 tqdm
+paddleocr
