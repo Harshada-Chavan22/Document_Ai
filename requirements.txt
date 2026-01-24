@@ -19,3 +19,4 @@ ultralytics
 tqdm
 paddleocr
 anaconda environment 
+anaconda promt
