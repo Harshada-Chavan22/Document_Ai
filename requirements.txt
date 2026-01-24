@@ -18,3 +18,4 @@ ultralytics
 # Utilities
 tqdm
 paddleocr
+anaconda environment 
