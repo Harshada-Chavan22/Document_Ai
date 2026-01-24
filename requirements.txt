@@ -20,3 +20,4 @@ tqdm
 paddleocr
 anaconda environment 
 anaconda promt
+docai path
