@@ -1,13 +1,26 @@
 import { useState } from "react";
-
+import axios from "axios"
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    console.log(email, password);
-  };
+  const handleLogin = async (e) => {
+  e.preventDefault();
+
+  try {
+    const res = await axios.post("http://localhost:5000/login", {
+      email,
+      password,
+    });
+
+    console.log(res.data);
+
+    alert("Login successfull✅");
+  } catch (err) {
+    console.error(err);
+    alert("Login failed❌");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
