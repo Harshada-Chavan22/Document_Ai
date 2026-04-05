@@ -3,6 +3,7 @@ import axios from "axios";
 
 const Upload = () => {
   const [file, setFile] = useState(null);
+  const [text, setText] = useState("");
 
   const handleUpload = async () => {
     if (!file) {
@@ -14,17 +15,30 @@ const Upload = () => {
     formData.append("file", file);
 
     try {
-      const res = await axios.post(
+      // Step 1: Upload file
+      const uploadRes = await axios.post(
         "http://localhost:5000/upload",
         formData
       );
 
-      console.log(res.data);
-      alert("File uploaded successfully ✅");
+      const filePath = uploadRes.data.filePath;
+
+      // Step 2: Extract text
+      const extractRes = await axios.post(
+        "http://localhost:5000/extract",
+        { filePath }
+      );
+
+      console.log(extractRes.data.text);
+
+      // ✅ FIX: set text here
+      setText(extractRes.data.text);
+
+      alert("Text extracted successfully ✅");
 
     } catch (err) {
       console.error(err);
-      alert("Upload failed ❌");
+      alert("Error ❌");
     }
   };
 
@@ -45,6 +59,13 @@ const Upload = () => {
         >
           Upload
         </button>
+
+        {/* ✅ Show extracted text */}
+        {text && (
+          <p className="mt-4 text-sm text-left whitespace-pre-wrap">
+            {text}
+          </p>
+        )}
       </div>
     </div>
   );

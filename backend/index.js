@@ -30,8 +30,31 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-app.post("/upload", upload.single("file"), (req, res) => {
-  res.json({ message: "File uploaded", file: req.file });
+app.post("/upload", upload.single("file"), async (req, res) => {
+  const filePath = req.file.path;
+
+  res.json({
+    message: "File uploaded",
+    filePath: filePath,
+  });
+});
+
+const Tesseract = require("tesseract.js");
+
+app.post("/extract", async (req, res) => {
+  const { filePath } = req.body;
+
+  try {
+    const result = await Tesseract.recognize(filePath, "eng");
+
+    res.json({
+      text: result.data.text,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Extraction failed" });
+  }
 });
 
 app.listen(5000, () => {
