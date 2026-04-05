@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-
+const multer = require("multer");
 const app = express();
 
 app.use(cors());
@@ -19,6 +19,19 @@ app.post("/login", (req, res) => {
   } else {
     return res.status(400).json({ message: "Invalid credentials" });
   }
+});
+
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+app.post("/upload", upload.single("file"), (req, res) => {
+  res.json({ message: "File uploaded", file: req.file });
 });
 
 app.listen(5000, () => {
