@@ -39,16 +39,52 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   });
 });
 
+
+
+const extractData = (text) => {
+  const cleanText = text.replace(/\n/g, " ");
+
+  // ✅ Amount (must include Rs or ₹)
+  const amount = cleanText.match(/(₹|Rs\.?|INR)\s?\d+/i);
+
+  // ✅ Date
+  const date = cleanText.match(/\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}/);
+
+  // ✅ Name
+  const name =
+    cleanText.match(/Name[:\-]?\s*([A-Za-z\s]+)/i);
+
+  return {
+    amount: amount ? amount[0] : "Not found",
+    date: date ? date[0] : "Not found",
+    name: name ? name[1] : "Not found",
+  };
+};
+
 const Tesseract = require("tesseract.js");
+
+const path = require("path");
 
 app.post("/extract", async (req, res) => {
   const { filePath } = req.body;
 
+  // ✅ Convert to absolute path
+  const fullPath = path.resolve(filePath);
+
+  console.log("Reading file:", fullPath);
+
   try {
-    const result = await Tesseract.recognize(filePath, "eng");
+    const result = await Tesseract.recognize(fullPath, "eng");
+
+    const text = result.data.text;
+
+    console.log("OCR TEXT:\n", text);
+
+    const extractedData = extractData(text);
 
     res.json({
-      text: result.data.text,
+      text,
+      extractedData,
     });
 
   } catch (err) {
