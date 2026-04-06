@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
 const app = express();
-
+const Document = require("./models/Document");
 app.use(cors());
 app.use(express.json());
 
@@ -38,7 +38,10 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     filePath: filePath,
   });
 });
-
+app.get("/documents", async (req, res) => {
+  const docs = await Document.find();
+  res.json(docs);
+});
 
 
 const extractData = (text) => {
@@ -61,6 +64,12 @@ const extractData = (text) => {
   };
 };
 
+const mongoose = require("mongoose");
+
+mongoose.connect("mongodb://127.0.0.1:27017/documentAI")
+  .then(() => console.log("MongoDB connected ✅"))
+  .catch(err => console.log(err));
+
 const Tesseract = require("tesseract.js");
 
 const path = require("path");
@@ -68,19 +77,20 @@ const path = require("path");
 app.post("/extract", async (req, res) => {
   const { filePath } = req.body;
 
-  // ✅ Convert to absolute path
-  const fullPath = path.resolve(filePath);
-
-  console.log("Reading file:", fullPath);
-
   try {
-    const result = await Tesseract.recognize(fullPath, "eng");
-
+    const result = await Tesseract.recognize(filePath, "eng");
     const text = result.data.text;
 
-    console.log("OCR TEXT:\n", text);
-
     const extractedData = extractData(text);
+
+    // ✅ Save to DB
+    const doc = new Document({
+      userId: "user1", // later from login
+      filePath,
+      extractedData,
+    });
+
+    await doc.save();
 
     res.json({
       text,
