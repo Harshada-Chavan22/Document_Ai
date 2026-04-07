@@ -1,10 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
 
 const Upload = () => {
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
   const [data, setData] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user) navigate("/");
+  }, []);
 
   const handleUpload = async () => {
     if (!file) {
@@ -16,7 +26,8 @@ const Upload = () => {
     formData.append("file", file);
 
     try {
-      // ✅ Step 1: Upload file
+      setLoading(true);
+
       const uploadRes = await axios.post(
         "http://localhost:5000/upload",
         formData
@@ -24,65 +35,66 @@ const Upload = () => {
 
       const filePath = uploadRes.data.filePath;
 
-      // ✅ Step 2: Extract text + structured data
       const extractRes = await axios.post(
         "http://localhost:5000/extract",
         { filePath }
       );
 
-      console.log("RAW TEXT:", extractRes.data.text);
-      console.log("EXTRACTED DATA:", extractRes.data.extractedData);
-
-      // ✅ Store results
       setText(extractRes.data.text);
       setData(extractRes.data.extractedData);
 
+      setLoading(false);
       alert("Text extracted successfully ✅");
 
     } catch (err) {
       console.error(err);
+      setLoading(false);
       alert("Error ❌");
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-md w-[400px] text-center">
-        
-        <h2 className="text-xl font-bold mb-4">Upload Document 📄</h2>
+    <div>
+      <Navbar />
 
-        {/* File Input */}
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-          className="mb-4"
-        />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded-xl shadow-md w-[400px] text-center">
 
-        {/* Upload Button */}
-        <button
-          onClick={handleUpload}
-          className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
-        >
-          Upload
-        </button>
+          <h2 className="text-xl font-bold mb-4">Upload Document 📄</h2>
 
-        {/* Extracted Structured Data */}
-        {data && (
-          <div className="mt-4 text-left bg-gray-50 p-3 rounded">
-            <p><strong>Name:</strong> {data.name}</p>
-            <p><strong>Date:</strong> {data.date}</p>
-            <p><strong>Amount:</strong> {data.amount}</p>
-          </div>
-        )}
+          <input
+            type="file"
+            onChange={(e) => setFile(e.target.files[0])}
+            className="mb-4"
+          />
 
-        {/* Raw OCR Text */}
-        {text && (
-          <div className="mt-4 text-left">
-            <h3 className="font-semibold mb-1">Extracted Text:</h3>
-            <p className="text-sm whitespace-pre-wrap">{text}</p>
-          </div>
-        )}
+          <button
+            onClick={handleUpload}
+            className="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600"
+          >
+            Upload
+          </button>
 
+          {loading && (
+            <p className="text-blue-500 mt-2">Processing... ⏳</p>
+          )}
+
+          {data && (
+            <div className="mt-4 text-left bg-gray-50 p-3 rounded">
+              <p><strong>Name:</strong> {data.name}</p>
+              <p><strong>Date:</strong> {data.date}</p>
+              <p><strong>Amount:</strong> {data.amount}</p>
+            </div>
+          )}
+
+          {text && (
+            <div className="mt-4 text-left">
+              <h3 className="font-semibold mb-1">Extracted Text:</h3>
+              <p className="text-sm whitespace-pre-wrap">{text}</p>
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   );
