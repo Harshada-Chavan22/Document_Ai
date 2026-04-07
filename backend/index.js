@@ -1,16 +1,53 @@
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
-const app = express();
+const mongoose = require("mongoose");
+const Tesseract = require("tesseract.js");
+const path = require("path");
+
 const Document = require("./models/Document");
+
+const app = express();
+
 app.use(cors());
 app.use(express.json());
 
+
+// ================== MULTER SETUP ==================
+const storage = multer.diskStorage({
+  destination: "uploads/",
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const upload = multer({ storage });
+
+
+// ================== DATA EXTRACTION ==================
+const extractData = (text) => {
+  const cleanText = text.replace(/\n/g, " ");
+
+  const amount = cleanText.match(/(₹|Rs\.?|INR)\s?\d+/i);
+  const date = cleanText.match(/\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}/);
+  const name = cleanText.match(/Name[:\-]?\s*([A-Za-z\s]+)/i);
+
+  return {
+    amount: amount ? amount[0] : "Not found",
+    date: date ? date[0] : "Not found",
+    name: name ? name[1] : "Not found",
+  };
+};
+
+
+// ================== ROUTES ==================
+
+// Test route
 app.get("/", (req, res) => {
   res.send("Backend running 🚀");
 });
 
-// LOGIN API (temporary)
+// Login (temporary)
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -21,71 +58,37 @@ app.post("/login", (req, res) => {
   }
 });
 
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
 
-const upload = multer({ storage });
-
-app.post("/upload", upload.single("file"), async (req, res) => {
-  const filePath = req.file.path;
+// Upload file
+app.post("/upload", upload.single("file"), (req, res) => {
+  console.log("File saved:", req.file.path);
 
   res.json({
     message: "File uploaded",
-    filePath: filePath,
+    filePath: req.file.path,
   });
 });
-app.get("/documents", async (req, res) => {
-  const docs = await Document.find();
-  res.json(docs);
-});
 
 
-const extractData = (text) => {
-  const cleanText = text.replace(/\n/g, " ");
-
-  // ✅ Amount (must include Rs or ₹)
-  const amount = cleanText.match(/(₹|Rs\.?|INR)\s?\d+/i);
-
-  // ✅ Date
-  const date = cleanText.match(/\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4}/);
-
-  // ✅ Name
-  const name =
-    cleanText.match(/Name[:\-]?\s*([A-Za-z\s]+)/i);
-
-  return {
-    amount: amount ? amount[0] : "Not found",
-    date: date ? date[0] : "Not found",
-    name: name ? name[1] : "Not found",
-  };
-};
-
-const mongoose = require("mongoose");
-
-mongoose.connect("mongodb://127.0.0.1:27017/documentAI")
-  .then(() => console.log("MongoDB connected ✅"))
-  .catch(err => console.log(err));
-
-const Tesseract = require("tesseract.js");
-
-const path = require("path");
-
+// Extract text + save to DB
 app.post("/extract", async (req, res) => {
   const { filePath } = req.body;
 
   try {
-    const result = await Tesseract.recognize(filePath, "eng");
+    const fullPath = path.resolve(filePath);
+
+    console.log("Reading file:", fullPath);
+
+    const result = await Tesseract.recognize(fullPath, "eng");
     const text = result.data.text;
+
+    console.log("OCR TEXT:\n", text);
 
     const extractedData = extractData(text);
 
-    // ✅ Save to DB
+    // Save to database
     const doc = new Document({
-      userId: "user1", // later from login
+      userId: "user1",
       filePath,
       extractedData,
     });
@@ -103,6 +106,28 @@ app.post("/extract", async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+
+// Get all documents (History)
+app.get("/documents", async (req, res) => {
+  try {
+    const docs = await Document.find();
+    res.json(docs);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch documents" });
+  }
 });
+
+
+// ================== MONGODB CONNECTION ==================
+mongoose.connect("YOUR_MONGODB_ATLAS_URL_HERE")
+  .then(() => {
+    console.log("MongoDB connected ✅");
+
+    app.listen(5000, () => {
+      console.log("Server running on port 5000");
+    });
+  })
+  .catch((err) => {
+    console.error("MongoDB connection failed ❌", err);
+    process.exit(1);
+  });
