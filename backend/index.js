@@ -119,7 +119,7 @@ app.get("/documents", async (req, res) => {
 
 
 // ================== MONGODB CONNECTION ==================
-mongoose.connect("YOUR_MONGODB_ATLAS_URL_HERE")
+mongoose.connect("mongodb+srv://testuser:test123@cluster0.r0goe.mongodb.net/documentAI")
   .then(() => {
     console.log("MongoDB connected ✅");
 
