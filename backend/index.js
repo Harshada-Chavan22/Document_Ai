@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -119,7 +120,7 @@ app.get("/documents", async (req, res) => {
 
 
 // ================== MONGODB CONNECTION ==================
-mongoose.connect("mongodb+srv://testuser:test123@cluster0.r0goe.mongodb.net/documentAI")
+mongoose.connect("process.env.MONGO_URI")
   .then(() => {
     console.log("MongoDB connected ✅");
 
