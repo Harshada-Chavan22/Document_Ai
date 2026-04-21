@@ -1,4 +1,6 @@
 require("dotenv").config();
+
+console.log("MONGO_URI VALUE 👉", process.env.MONGO_URI);
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -123,7 +125,7 @@ app.get("/documents", async (req, res) => {
 mongoose.connect("process.env.MONGO_URI")
   .then(() => {
     console.log("MongoDB connected ✅");
-
+    
     app.listen(5000, () => {
       console.log("Server running on port 5000");
     });
