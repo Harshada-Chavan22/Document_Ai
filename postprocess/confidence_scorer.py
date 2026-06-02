@@ -39,3 +39,4 @@ def compute_document_confidence(ocr_lines, fields):
         score /= weight_sum
 
     return round(score, 3)
+# this can be extend so that application will be more affective
