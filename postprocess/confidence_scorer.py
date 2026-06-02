@@ -10,7 +10,7 @@ def compute_document_confidence(ocr_lines, fields):
     if fields.get("dealer_match_score") is not None:
         score += fields["dealer_match_score"] * 0.25
         weight_sum += 0.25
-
+    #this is for match score 
     # 2️⃣ OCR confidence (average)
     if ocr_lines:
         avg_ocr_conf = sum(l["confidence"] for l in ocr_lines) / len(ocr_lines)
